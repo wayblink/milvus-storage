@@ -6,3 +6,7 @@ go/.vscode/*
 go/.idea/*
 compile_commands.json
 CMakeUserPresets.json
+.idea
+java/.idea
+java/java.iml
+java/target
