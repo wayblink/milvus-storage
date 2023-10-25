@@ -1,10 +1,10 @@
 package io.milvus.storage.format;
 
-import org.apache.arrow.vector.table.Table;
+import org.apache.arrow.vector.VectorSchemaRoot;
 
 public interface Reader {
     // If it Table
     // todo exception type?
-    Table Read() throws Exception;
+    VectorSchemaRoot Read() throws Exception;
     void Close() throws Exception;
 }

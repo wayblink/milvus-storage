@@ -1,9 +1,9 @@
 package io.milvus.storage.format;
 
-import org.apache.arrow.vector.table.Table;
+import org.apache.arrow.vector.VectorSchemaRoot;
 
 public interface Writer {
-    void Write(Table record);
+    void Write(VectorSchemaRoot record);
     long Count();
     void Close();
 }
