@@ -37,7 +37,7 @@ public class Utils {
      *                   -> metadata Map<String,String>
      */
 
-    public static SchemaOuterClass.ArrowSchema ToProtobufSchema(Schema schema) throws Exception {
+    public static SchemaOuterClass.ArrowSchema ToProtobufSchema(Schema schema) {
         SchemaOuterClass.ArrowSchema.Builder builder = SchemaOuterClass.ArrowSchema.newBuilder();
         schema.getFields().forEach(field -> builder.addFields(ToProtobufField(field)));
 

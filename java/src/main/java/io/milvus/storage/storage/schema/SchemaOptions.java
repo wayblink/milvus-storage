@@ -14,7 +14,7 @@ public class SchemaOptions {
     String versionColumn;
     String vectorColumn;
 
-    public SchemaOptions DefaultSchemaOptions() {
+    public static SchemaOptions DefaultSchemaOptions() {
         return new SchemaOptions("","","");
     }
 

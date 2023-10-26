@@ -29,10 +29,10 @@ public class Fragment {
         return new Fragment(fragment.getId(), fragment.getFilesList());
     }
 
-    public static ManifestOuterClass.Fragment ToProtobuf(Fragment fragment) {
+    public ManifestOuterClass.Fragment ToProtobuf() {
         return ManifestOuterClass.Fragment.newBuilder()
-                .setId(fragment.id)
-                .addAllFiles(fragment.getFiles())
+                .setId(this.id)
+                .addAllFiles(this.getFiles())
                 .build();
     }
 }

@@ -1,87 +1,14 @@
 package io.milvus.storage.storage.schema;
 
-//
-//        func (s *Schema) FromProtobuf(schema *schema_proto.Schema) error {
-//        schemaType, err := utils.FromProtobufSchema(schema.ArrowSchema)
-//        if err != nil {
-//        return err
-//        }
-//
-//        s.schema = schemaType
-//        s.options.FromProtobuf(schema.GetSchemaOptions())
-//        s.BuildScalarSchema()
-//        s.BuildVectorSchema()
-//        s.BuildDeleteSchema()
-//        return nil
-//        }
-//
-//        func (s *Schema) ToProtobuf() (*schema_proto.Schema, error) {
-//        schema := &schema_proto.Schema{}
-//        arrowSchema, err := utils.ToProtobufSchema(s.schema)
-//        if err != nil {
-//        return nil, err
-//        }
-//        schema.ArrowSchema = arrowSchema
-//        schema.SchemaOptions = s.options.ToProtobuf()
-//        return schema, nil
-//        }
-//
-//        func (s *Schema) BuildScalarSchema() error {
-//        fields := make([]arrow.Field, 0, len(s.schema.Fields()))
-//        for _, field := range s.schema.Fields() {
-//        if field.Name == s.options.VectorColumn {
-//        continue
-//        }
-//        fields = append(fields, field)
-//        }
-//        offsetFiled := arrow.Field{Name: constant.OffsetFieldName, Type: arrow.DataType(&arrow.Int64Type{})}
-//        fields = append(fields, offsetFiled)
-//        s.scalarSchema = arrow.NewSchema(fields, nil)
-//
-//        return nil
-//        }
-//
-//        func (s *Schema) BuildVectorSchema() error {
-//        fields := make([]arrow.Field, 0, len(s.schema.Fields()))
-//        for _, field := range s.schema.Fields() {
-//        if field.Name == s.options.VectorColumn ||
-//        field.Name == s.options.PrimaryColumn ||
-//        field.Name == s.options.VersionColumn {
-//        fields = append(fields, field)
-//        }
-//        }
-//        s.vectorSchema = arrow.NewSchema(fields, nil)
-//
-//        return nil
-//        }
-//
-//        func (s *Schema) BuildDeleteSchema() error {
-//        pkColumn, ok := s.schema.FieldsByName(s.options.PrimaryColumn)
-//        if !ok {
-//        return ErrPrimaryColumnNotFound
-//        }
-//        versionField, ok := s.schema.FieldsByName(s.options.VersionColumn)
-//        if !ok {
-//        return ErrPrimaryColumnNotFound
-//        }
-//        fields := make([]arrow.Field, 0, 2)
-//        fields = append(fields, pkColumn[0])
-//        fields = append(fields, versionField[0])
-//        s.deleteSchema = arrow.NewSchema(fields, nil)
-//        return nil
-//        }
-
 import io.milvus.storage.common.utils.Utils;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.arrow.vector.types.Types;
-import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import schema_proto.SchemaOuterClass;
 
-import javax.rmi.CORBA.Util;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,6 +18,7 @@ import static io.milvus.storage.storage.schema.SchemaException.ErrVersionColumnN
 
 @Getter
 @ToString
+@NoArgsConstructor
 public class Schema {
     private org.apache.arrow.vector.types.pojo.Schema schema;
     private org.apache.arrow.vector.types.pojo.Schema scalarSchema;
@@ -167,20 +95,22 @@ public class Schema {
         this.deleteSchema = new org.apache.arrow.vector.types.pojo.Schema(fields);
     }
 
-    public void FromProtobuf(SchemaOuterClass.Schema schema) throws Exception {
-        org.apache.arrow.vector.types.pojo.Schema arrowSchema = Utils.FromProtobufSchema(schema.getArrowSchema());
-        this.schema = arrowSchema;
-        this.options = SchemaOptions.FromProtobuf(schema.getSchemaOptions());
-        this.BuildScalarSchema();
-        this.BuildVectorSchema();
-        this.BuildDeleteSchema();
-        return;
-    }
-
-    public SchemaOuterClass.Schema ToProtobuf(Schema schema) throws Exception {
+    public SchemaOuterClass.Schema ToProtobuf() {
         SchemaOuterClass.Schema.Builder builder = SchemaOuterClass.Schema.newBuilder();
         builder.setArrowSchema(Utils.ToProtobufSchema(this.schema));
         builder.setSchemaOptions(SchemaOptions.ToProtobuf(this.options));
         return builder.build();
     }
+
+    public static Schema FromProtobuf(SchemaOuterClass.Schema schema) throws Exception {
+        org.apache.arrow.vector.types.pojo.Schema arrowSchema = Utils.FromProtobufSchema(schema.getArrowSchema());
+        Schema schema2 = new Schema();
+        schema2.schema = arrowSchema;
+        schema2.options = SchemaOptions.FromProtobuf(schema.getSchemaOptions());
+        schema2.BuildScalarSchema();
+        schema2.BuildVectorSchema();
+        schema2.BuildDeleteSchema();
+        return schema2;
+    }
+
 }
