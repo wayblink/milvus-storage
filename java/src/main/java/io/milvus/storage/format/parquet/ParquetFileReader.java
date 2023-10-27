@@ -16,6 +16,7 @@ import org.apache.arrow.vector.ipc.ArrowReader;
 import java.io.IOException;
 
 public class ParquetFileReader implements Reader {
+//    private FileSystem fs;
     private String filePath;
     private Long batchSize;
     private ArrowReader reader;
