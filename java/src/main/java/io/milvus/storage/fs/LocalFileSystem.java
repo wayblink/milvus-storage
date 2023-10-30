@@ -1,20 +1,9 @@
 package io.milvus.storage.fs;
 
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.s3a.S3AFileSystem;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
-public class S3FileSystem implements FileSystem {
-    private String bucket;
-    private String region;
-    private String accessKey; // ak
-    private String secretKey; // sk
-    private S3AFileSystem innerFs;
-
+public class LocalFileSystem implements FileSystem{
     @Override
     public File Open(String path) {
         return null;
