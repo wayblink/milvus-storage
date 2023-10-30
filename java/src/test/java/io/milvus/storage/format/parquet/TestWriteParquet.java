@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 
-public class TestParquetFileWrite {
+public class TestWriteParquet {
 
     public static void main(String[] args) throws IOException {
         // schema

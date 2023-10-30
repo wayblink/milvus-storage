@@ -12,7 +12,15 @@ public class TestParquetFileReader {
     @Test
     public void testReadFile() throws Exception {
         String uri = "file:" + System.getProperty("user.dir") +  "/data/example.parquet";
-        Reader reader = new ParquetFileReader(uri, 100);
+        Reader reader = new ParquetFileReader(uri);
+        VectorSchemaRoot root = reader.Read();
+        System.out.println(root.contentToTSVString());
+    }
+
+    @Test
+    public void testReadFile2() throws Exception {
+        String uri = "file:" + System.getProperty("user.dir") +  "/output.parquet";
+        Reader reader = new ParquetFileReader(uri);
         VectorSchemaRoot root = reader.Read();
         System.out.println(root.contentToTSVString());
     }
