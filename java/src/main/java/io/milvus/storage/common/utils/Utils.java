@@ -1,16 +1,16 @@
 package io.milvus.storage.common.utils;
 
+import com.sun.org.apache.xml.internal.utils.URI;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.arrow.vector.types.pojo.Schema;
 import schema_proto.SchemaOuterClass;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.arrow.vector.types.FloatingPointPrecision.*;
 

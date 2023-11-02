@@ -1,17 +1,21 @@
 package io.milvus.storage.fs;
 
-import io.milvus.storage.format.parquet.ParquetFileWriter;
-
 import java.io.File;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
 
 public interface FileSystem {
-    File Open(String path);
-    void Rename(String src, String dst);
-    void Delete(String path);
-    void CreateDir(String path);
-    List<File> List(String path);
-    byte[] Read(String path);
-    boolean Exist(String path);
-    String Path();
+    File open(String path);
+    boolean rename(String src, String dst) throws IOException;
+    boolean delete(String path, boolean recursive) throws IOException;
+    boolean mkdir(String path) throws IOException;
+    FileStatus[] list(String path) throws IOException;
+    byte[] read(String path) throws IOException;
+    boolean exist(String path) throws IOException;
+    // seems useless
+    String path();
+
+
+    URI getUri();
 }
