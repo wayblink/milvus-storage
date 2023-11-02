@@ -35,6 +35,9 @@ public class ManifestReaderWriter {
 
         FileStatus[] manifests = this.findAllManifest();
 
+        if (manifests == null || manifests.length == 0) {
+            return null;
+        }
         Path maxVersionManifest = null;
         Long maxVersion = -1L;
         for (FileStatus manifest: manifests) {
@@ -75,8 +78,13 @@ public class ManifestReaderWriter {
     }
 
     private FileStatus[] findAllManifest() throws IOException {
-        FileStatus[] files = this.fs.listStatus(new Path(StorageUtils.GetManifestDir(this.rootPath)));
-        return files;
+        Path path = new Path(StorageUtils.GetManifestDir(this.rootPath));
+        if (this.fs.exists(path)) {
+            FileStatus[] files = this.fs.listStatus(new Path(StorageUtils.GetManifestDir(this.rootPath)));
+            return files;
+        } else {
+            return null;
+        }
     }
 
 }

@@ -60,8 +60,9 @@ public class ParquetFileWriter implements Writer {
         while (iter.hasNext()) {
             Row row = iter.next();
             this.avroParquetWriter.write(toAvroRecord(row, this.avroSchema, this.schema));
+            this.count++;
         }
-        this.count += record.getRowCount();
+//        this.count += record.getRowCount();
     }
 
     @Override
@@ -82,10 +83,18 @@ public class ParquetFileWriter implements Writer {
             ArrowType fieldType = field.getFieldType().getType();
             switch (fieldType.getTypeID()) {
                 case Int:
-                    avroRecordBuilder.set(field.getName(), arrowRow.getInt(field.getName()));
+                    int width = ((ArrowType.Int)(field.getFieldType().getType())).getBitWidth();
+                    if (width == 64) {
+                        avroRecordBuilder.set(field.getName(), arrowRow.getBigInt(field.getName()));
+                    } else if (width==32) {
+                        avroRecordBuilder.set(field.getName(), arrowRow.getInt(field.getName()));
+                    }
                     break;
                 case Utf8:
                     avroRecordBuilder.set(field.getName(), arrowRow.getVarChar(field.getName()));
+                    break;
+                case FixedSizeBinary:
+                    avroRecordBuilder.set(field.getName(), arrowRow.getFixedSizeBinary(field.getName()));
                     break;
                 // Add cases for other Arrow data types as needed
                 default:
@@ -108,6 +117,9 @@ public class ParquetFileWriter implements Writer {
                     break;
                 case Utf8:
                     avroFieldType = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.STRING);
+                    break;
+                case FixedSizeBinary:
+                    avroFieldType = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.BYTES);
                     break;
                 // Add cases for other Arrow data types as needed
                 default:

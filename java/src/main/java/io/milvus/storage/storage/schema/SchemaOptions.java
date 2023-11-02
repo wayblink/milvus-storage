@@ -1,6 +1,7 @@
 package io.milvus.storage.storage.schema;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.ToString;
 import schema_proto.SchemaOuterClass;
 
 import static io.milvus.storage.storage.schema.SchemaException.*;
@@ -8,11 +9,43 @@ import static org.apache.arrow.vector.types.pojo.ArrowType.ArrowTypeID.*;
 
 @Getter
 @ToString
-@AllArgsConstructor
 public class SchemaOptions {
-    String primaryColumn;
-    String versionColumn;
-    String vectorColumn;
+    private String primaryColumn;
+    private String versionColumn;
+    private String vectorColumn;
+
+    public SchemaOptions(String primaryColumn, String versionColumn, String vectorColumn) {
+        this.primaryColumn = primaryColumn;
+        this.versionColumn = versionColumn;
+        this.vectorColumn = vectorColumn;
+    }
+
+    public static final class Builder {
+        private String primaryColumn;
+        private String versionColumn;
+        private String vectorColumn;
+
+        public SchemaOptions.Builder setPrimaryColumn(String column) {
+            this.primaryColumn = column;
+            return this;
+        }
+
+        public SchemaOptions.Builder setVersionColumn(String column) {
+            this.versionColumn = column;
+            return this;
+        }
+
+        public SchemaOptions.Builder setVectorColumn(String column) {
+            this.vectorColumn = column;
+            return this;
+        }
+
+        public SchemaOptions build() {
+            return new SchemaOptions(primaryColumn, versionColumn, vectorColumn);
+        }
+
+    }
+
 
     public static SchemaOptions DefaultSchemaOptions() {
         return new SchemaOptions("","","");

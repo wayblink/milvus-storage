@@ -9,11 +9,22 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
-@AllArgsConstructor
 public class Fragment {
     private Long id;
     private List<String> files;
+
+    public Fragment() {
+        this.files = new ArrayList<>();
+    }
+
+    public Fragment(Long id) {
+        this(id, new ArrayList<>());
+    }
+
+    public Fragment(Long id, List<String> files) {
+        this.id = id;
+        this.files = files;
+    }
 
     public static List<String> ToFilesVector(List<Fragment> fragments) {
         List<String> files = new ArrayList<>();

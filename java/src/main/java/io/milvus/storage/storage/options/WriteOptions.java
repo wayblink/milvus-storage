@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @Builder
 public class WriteOptions {
-    private Long maxRecordPerFile;
+    Long maxRecordPerFile;
 }

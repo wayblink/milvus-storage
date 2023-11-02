@@ -9,9 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 public class FragmentVector {
     List<Fragment> fragments;
+
+    public FragmentVector() {
+        this.fragments = new ArrayList<>();
+    }
+
+    public FragmentVector(List<Fragment> fragments) {
+        this.fragments = fragments;
+    }
 
     public void AddFragment(Fragment fragment) {
         this.fragments.add(fragment);

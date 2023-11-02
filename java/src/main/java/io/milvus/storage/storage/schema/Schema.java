@@ -18,7 +18,6 @@ import static io.milvus.storage.storage.schema.SchemaException.ErrVersionColumnN
 
 @Getter
 @ToString
-@NoArgsConstructor
 public class Schema {
     private org.apache.arrow.vector.types.pojo.Schema schema;
     private org.apache.arrow.vector.types.pojo.Schema scalarSchema;
@@ -27,9 +26,10 @@ public class Schema {
 
     private SchemaOptions options;
 
-    public Schema(org.apache.arrow.vector.types.pojo.Schema schema, SchemaOptions options) {
+    public Schema(org.apache.arrow.vector.types.pojo.Schema schema, SchemaOptions options) throws SchemaException {
         this.schema = schema;
         this.options = options;
+        this.Validate();
     }
 
     public void Validate() throws SchemaException {
@@ -42,7 +42,7 @@ public class Schema {
     public void BuildScalarSchema() throws SchemaException {
         List<Field> fields = new ArrayList<>();
         for (int i = 0; i < this.schema.getFields().size(); i++) {
-            if (!this.schema.getFields().get(i).getName().equals(this.options.vectorColumn)) {
+            if (!this.schema.getFields().get(i).getName().equals(this.options.getVectorColumn())) {
                 fields.add(this.schema.getFields().get(i));
             }
         }
@@ -104,9 +104,7 @@ public class Schema {
 
     public static Schema FromProtobuf(SchemaOuterClass.Schema schema) throws Exception {
         org.apache.arrow.vector.types.pojo.Schema arrowSchema = Utils.FromProtobufSchema(schema.getArrowSchema());
-        Schema schema2 = new Schema();
-        schema2.schema = arrowSchema;
-        schema2.options = SchemaOptions.FromProtobuf(schema.getSchemaOptions());
+        Schema schema2 = new Schema(arrowSchema, SchemaOptions.FromProtobuf(schema.getSchemaOptions()));
         schema2.BuildScalarSchema();
         schema2.BuildVectorSchema();
         schema2.BuildDeleteSchema();

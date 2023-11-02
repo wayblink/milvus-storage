@@ -1,6 +1,7 @@
 package io.milvus.storage.common.utils;
 
 import com.sun.org.apache.xml.internal.utils.URI;
+import org.apache.arrow.flatbuf.Type;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
@@ -180,7 +181,69 @@ public class Utils {
     }
 
     public static SchemaOuterClass.LogicType ToProtobufType(ArrowType dataType) {
-       return SchemaOuterClass.LogicType.valueOf(dataType.getTypeID().name());
+        if (dataType.getTypeID().name().equals("Int")) {
+            switch (((ArrowType.Int)dataType).getBitWidth()) {
+                case 32:
+                    return SchemaOuterClass.LogicType.INT32;
+                case 64:
+                    return SchemaOuterClass.LogicType.INT64;
+            }
+        } else if (dataType.getTypeID().name().equals("FixedSizeBinary")) {
+//            ((ArrowType.FixedSizeBinary)dataType).getByteWidth()
+            return SchemaOuterClass.LogicType.FIXED_SIZE_BINARY;
+        }
+
+        switch (dataType.getTypeID().getFlatbufID()) {
+            case Type.Int:
+                return SchemaOuterClass.LogicType.UINT8;
+//
+//            case ArrowType.Null.:
+//                return new ArrowType.Null();
+//            case BOOL:
+//                return new ArrowType.Bool();
+//            case UINT8:
+//                return new ArrowType.Int(8, false);
+//            case INT8:
+//                return new ArrowType.Int(8, true);
+//            case UINT16:
+//                return new ArrowType.Int(16, false);
+//            case INT16:
+//                return new ArrowType.Int(16, true);
+//            case UINT32:
+//                return new ArrowType.Int(32, false);
+//            case INT32:
+//                return new ArrowType.Int(32, true);
+//            case UINT64:
+//                return new ArrowType.Int(64, false);
+//            case INT64:
+//                return new ArrowType.Int(64, true);
+//            case HALF_FLOAT:
+//                return new ArrowType.FloatingPoint(HALF);
+//            case FLOAT:
+//                return new ArrowType.FloatingPoint(SINGLE);
+//            case DOUBLE:
+//                return new ArrowType.FloatingPoint(DOUBLE);
+//            case STRING:
+//                return new ArrowType.Utf8();
+//            case BINARY:
+//                return new ArrowType.Binary();
+//            // todo fix me complex datatype parse
+//            case FIXED_SIZE_BINARY:
+//                return new ArrowType.FixedSizeBinary(dataType.getFixedSizeBinaryType().getByteWidth());
+//            case FIXED_SIZE_LIST:
+//                return new ArrowType.FixedSizeList(dataType.getFixedSizeListType().getListSize());
+//            case LIST:
+//                return new ArrowType.List();
+//            case STRUCT:
+//                return new ArrowType.Struct();
+//            case MAP:
+//                return new ArrowType.Map(dataType.getMapType().getKeysSorted());
+//            case DICTIONARY:
+            default:
+                return null;
+//                throw new Exception("Unsupported protobuf datatype: " + dataType.getLogicType().toString());
+        }
+//       return SchemaOuterClass.LogicType.(dataType.getTypeID().getFlatbufID());
     }
 
     public static void SetTypeRelatedValues(SchemaOuterClass.DataType.Builder protoDataTypeBuilder, ArrowType dataType) {

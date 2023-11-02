@@ -4,6 +4,10 @@ import io.milvus.storage.common.constant.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.UUID;
+
 public class StorageUtils {
     private final static Logger log = LoggerFactory.getLogger(StorageUtils.class);
 
@@ -33,6 +37,19 @@ public class StorageUtils {
             return -1L;
         }
         return versionLong;
+    }
+
+    public static String GetNewParquetFilePath(String path) {
+        UUID scalarFileId = UUID.randomUUID();
+        return new File(path, scalarFileId + Constant.ParquetDataFileSuffix).getPath();
+    }
+
+    public static String GetScalarDataDir(String path) {
+        return new File(path, Constant.ScalarDataDir).getPath();
+    }
+
+    public static String GetVectorDataDir(String path) {
+        return new File(path, Constant.VectorDataDir).getPath();
     }
 
 }

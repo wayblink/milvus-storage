@@ -1,10 +1,14 @@
 package io.milvus.storage.storage.space;
 
+import io.milvus.storage.common.exception.FieldNotFoundException;
+import io.milvus.storage.common.exception.SchemaNotMatchException;
 import io.milvus.storage.file.fragment.DeleteFragmentVector;
 import io.milvus.storage.storage.manifest.Manifest;
 import io.milvus.storage.storage.manifest.ManifestReaderWriter;
+import io.milvus.storage.storage.options.WriteOptions;
 import io.milvus.storage.storage.transaction.WriteOperation;
 import lombok.Getter;
+import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -24,9 +28,7 @@ public class Space {
     }
 
     public Space(String path, Manifest manifest) {
-        this.path = path;
-        this.deleteFragments = new DeleteFragmentVector();
-        this.manifest = manifest;
+        this(path, new DeleteFragmentVector(), manifest);
     }
 
     public Space(String path, DeleteFragmentVector deleteFragments, Manifest manifest) {
@@ -35,8 +37,8 @@ public class Space {
         this.manifest = manifest;
     }
 
-    public void Write(/*reader array.RecordReader, options *options.WriteOptions*/) {
-        new WriteOperation().Execute();
+    public void Write(VectorSchemaRoot data, WriteOptions options) throws SchemaNotMatchException, FieldNotFoundException, IOException {
+        new WriteOperation(data, options, this).Execute();
     }
 
     public void Delete(/* reader array.RecordReader */) {
@@ -66,18 +68,14 @@ public class Space {
 
         ManifestReaderWriter manifestReaderWriter = new ManifestReaderWriter(fs, uri);
 
-        Manifest m = null;
-        try {
-            m = manifestReaderWriter.Read(options.getVersion());
-        } catch (Exception e) {
-            e.printStackTrace();
-            // not exist, create the first manifest
-            if (options.getSchema() == null) {
-                throw new Exception("schema is nil");
-            }
+        Manifest m = manifestReaderWriter.Read(options.getVersion());
+        if (m == null) {
             m = new Manifest(options.getSchema());
             m.setVersion(0L);
             manifestReaderWriter.Write(m);
+        }
+        if (options.getSchema() == null) {
+            throw new Exception("schema is nil");
         }
         return new Space(uri, m);
     }

@@ -4,6 +4,7 @@ import io.milvus.storage.file.blob.Blob;
 import io.milvus.storage.file.fragment.Fragment;
 import io.milvus.storage.file.fragment.FragmentVector;
 import io.milvus.storage.storage.schema.Schema;
+import io.milvus.storage.storage.schema.SchemaException;
 import io.milvus.storage.storage.schema.SchemaOptions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,9 +28,13 @@ public class Manifest {
 
     public Manifest(Schema schema) {
         this.schema = schema;
+        this.scalarFragments = new FragmentVector();
+        this.vectorFragments = new FragmentVector();
+        this.deleteFragments = new FragmentVector();
+        this.blobs = new ArrayList<>();
     }
 
-    public Manifest() {
+    public Manifest() throws SchemaException {
         SchemaOptions schemaOptions = SchemaOptions.DefaultSchemaOptions();
         org.apache.arrow.vector.types.pojo.Schema arrowSchema =
                 new org.apache.arrow.vector.types.pojo.Schema(new ArrayList<Field>()/*, schemaOptions*/);
