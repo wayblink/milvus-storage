@@ -3,6 +3,8 @@ package io.milvus.storage.format.parquet;
 import io.milvus.storage.format.Writer;
 import io.milvus.storage.fs.FileSystem;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.VectorUnloader;
+import org.apache.arrow.vector.ipc.message.ArrowRecordBatch;
 import org.apache.arrow.vector.table.Row;
 import org.apache.arrow.vector.table.Table;
 import org.apache.arrow.vector.types.pojo.ArrowType;

@@ -10,9 +10,8 @@ import io.milvus.storage.storage.manifest.ManifestReaderWriter;
 import io.milvus.storage.storage.options.WriteOptions;
 import io.milvus.storage.storage.space.Space;
 import io.milvus.storage.storage.utils.StorageUtils;
-import org.apache.arrow.vector.BigIntVector;
-import org.apache.arrow.vector.FieldVector;
-import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.*;
+import org.apache.arrow.vector.ipc.message.ArrowRecordBatch;
 import org.apache.arrow.vector.types.pojo.Schema;
 
 import java.io.IOException;
@@ -45,8 +44,8 @@ public class WriteOperation implements Operation{
         Fragment scalarFragment = new Fragment();
         Fragment vectorFragment = new Fragment();
 
-//        VectorSchemaRoot scalarData = WriteOperation.projection(data, scalarSchema, true);
-//        VectorSchemaRoot vectorData = WriteOperation.projection(data, vectorSchema, true);
+        VectorSchemaRoot scalarData = WriteOperation.projection(data, scalarSchema, true);
+        VectorSchemaRoot vectorData = cloneRoot(scalarData);
 
         String scalarDataPath = StorageUtils.GetNewParquetFilePath(StorageUtils.GetScalarDataDir(this.space.getPath()));
         String vectorDataPath = StorageUtils.GetNewParquetFilePath(StorageUtils.GetVectorDataDir(this.space.getPath()));
@@ -55,8 +54,8 @@ public class WriteOperation implements Operation{
         scalarWriter = new ParquetFileWriter(scalarDataPath, scalarSchema);
         vectorWriter = new ParquetFileWriter(vectorDataPath, vectorSchema);
 
-        vectorWriter.Write(data);
-        scalarWriter.Write(data);
+        scalarWriter.Write(scalarData);
+        vectorWriter.Write(vectorData);
 
         scalarFragment.AddFile(scalarDataPath);
         vectorFragment.AddFile(vectorDataPath);
@@ -78,6 +77,16 @@ public class WriteOperation implements Operation{
 //    private List<Fragment> write(Writer writer, Schema schema, VectorSchemaRoot data, boolean isScalar) {
 //
 //    }
+
+    private VectorSchemaRoot cloneRoot(VectorSchemaRoot originalRoot) {
+        VectorSchemaRoot theRoot = VectorSchemaRoot.create(originalRoot.getSchema(), originalRoot.getFieldVectors().get(0).getAllocator());
+        VectorLoader loader = new VectorLoader(theRoot);
+        VectorUnloader unloader = new VectorUnloader(originalRoot);
+        try (ArrowRecordBatch recordBatch = unloader.getRecordBatch()) {
+            loader.load(recordBatch);
+        }
+        return theRoot;
+    }
 
     public static VectorSchemaRoot projection(VectorSchemaRoot source, Schema schema, boolean isScalar) throws FieldNotFoundException {
         List<FieldVector> selectedFields = new ArrayList();
@@ -112,6 +121,7 @@ public class WriteOperation implements Operation{
 //                }
 //            }
 //        }
-        return new VectorSchemaRoot(schema, selectedFields, source.getRowCount());
+
+        return new VectorSchemaRoot(selectedFields);
     }
 }
