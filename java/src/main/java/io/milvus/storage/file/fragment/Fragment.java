@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @ToString
 public class Fragment {
-    private Long id;
+    private Long id = 0L;
     private List<String> files;
 
     public Fragment() {
@@ -42,7 +42,7 @@ public class Fragment {
 
     public ManifestOuterClass.Fragment ToProtobuf() {
         return ManifestOuterClass.Fragment.newBuilder()
-                .setId(this.id)
+                .setId(this.getId())
                 .addAllFiles(this.getFiles())
                 .build();
     }

@@ -1,10 +1,9 @@
 package io.milvus.storage.fs.local;
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.milvus.storage.common.utils.OperatingSystem;
 import io.milvus.storage.fs.FileStatus;
+import io.milvus.storage.fs.File;
 import io.milvus.storage.fs.FileSystem;
-import org.apache.hadoop.fs.FSDataInputStream;
 
 import java.io.*;
 import java.net.URI;
@@ -26,38 +25,38 @@ public class LocalFileSystem implements FileSystem{
     }
 
     @Override
-    public File open(String path) {
-        File src = new File("test");
-        src.mkdirs();
-        return src;
+    public File open(String path) throws IOException {
+        LocalFile file = new LocalFile(path);
+        String parent = file.getFile().getParent();
+        this.mkdir(parent);
+        return file;
     }
 
-    public FileOutputStream open(String filePath, boolean overwrite) throws IOException {
-        File file = new File(filePath);
-        if (exist(filePath) && !overwrite) {
-            throw new FileAlreadyExistsException("File already exists: " + filePath);
+    public FileOutputStream open(String path, boolean overwrite) throws IOException {
+        LocalFile file = new LocalFile(path);
+        if (exist(path) && !overwrite) {
+            throw new FileAlreadyExistsException("File already exists: " + path);
         }
-        String parent = file.getParent();
+        String parent = file.getFile().getParent();
         if (parent != null && !mkdir(parent)) {
             throw new IOException("Mkdirs failed to create " + parent);
         }
-        return new FileOutputStream(file);
+        return new FileOutputStream(file.getFile());
     }
 
     @Override
     public boolean rename(String src, String dst) throws IOException {
-        final File srcFile = new File(src);
-        final File dstFile = new File(dst);
+        LocalFile srcFile = new LocalFile(src);
+        LocalFile dstFile = new LocalFile(dst);
 
-        final File dstParent = dstFile.getParentFile();
+        LocalFile dstParent = new LocalFile(dstFile.getFile().getParentFile());
 
-        // Files.move fails if the destination directory doesn't exist
-        // noinspection ResultOfMethodCallIgnored -- we don't care if the directory existed or was
-        // created
-        dstParent.mkdirs();
+        if (dstParent.getFile() != null) {
+            dstParent.getFile().mkdirs();
+        }
 
         try {
-            Files.move(srcFile.toPath(), dstFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(srcFile.getFile().toPath(), dstFile.getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
             return true;
         } catch (NoSuchFileException
                 | AccessDeniedException
@@ -71,16 +70,14 @@ public class LocalFileSystem implements FileSystem{
     @Override
     public boolean delete(String path, boolean recursive) throws IOException {
 
-        final File file = new File(path);
-        if (file.isFile()) {
-            return file.delete();
-        } else if ((!recursive) && file.isDirectory()) {
-            File[] containedFiles = file.listFiles();
+        LocalFile file = new LocalFile(path);
+        if (file.getFile().isFile()) {
+            return file.getFile().delete();
+        } else if ((!recursive) && file.getFile().isDirectory()) {
+            java.io.File[] containedFiles = file.getFile().listFiles();
             if (containedFiles == null) {
                 throw new IOException(
-                        "Directory "
-                                + file.toString()
-                                + " does not exist or an I/O error occurred");
+                        "Directory " + file.toString() + " does not exist or an I/O error occurred");
             } else if (containedFiles.length != 0) {
                 throw new IOException("Directory " + file.toString() + " is not empty");
             }
@@ -97,24 +94,24 @@ public class LocalFileSystem implements FileSystem{
      *     otherwise
      * @throws IOException thrown if an error occurred while deleting the files/directories
      */
-    private boolean delete(final File f) throws IOException {
+    private boolean delete(LocalFile f) throws IOException {
 
-        if (f.isDirectory()) {
-            final File[] files = f.listFiles();
+        if (f.getFile().isDirectory()) {
+            java.io.File[] files = f.getFile().listFiles();
             if (files != null) {
-                for (File file : files) {
-                    final boolean del = delete(file);
+                for (java.io.File file : files) {
+                    final boolean del = delete(new LocalFile(file.getPath()));
                     if (!del) {
                         return false;
                     }
                 }
             }
         } else {
-            return f.delete();
+            return f.getFile().delete();
         }
 
         // Now directory is empty
-        return f.delete();
+        return f.getFile().delete();
     }
 
     @Override
@@ -124,53 +121,54 @@ public class LocalFileSystem implements FileSystem{
 
     @Override
     public boolean mkdir(String path) throws IOException {
-        return mkdirsInternal(new File(path));
+        return new LocalFile(path).getFile().mkdirs();
+//        return mkdirsInternal(new LocalFile(path));
     }
 
-    private boolean mkdirsInternal(File file) throws IOException {
-        if (file.isDirectory()) {
+    private boolean mkdirsInternal(LocalFile file) throws IOException {
+        if (file.getFile().isDirectory()) {
             return true;
-        } else if (file.exists() && !file.isDirectory()) {
+        } else if (file.getFile().exists() && !file.getFile().isDirectory()) {
             // Important: The 'exists()' check above must come before the 'isDirectory()' check to
             //            be safe when multiple parallel instances try to create the directory
 
             // exists and is not a directory -> is a regular file
-            throw new IOException("directory already exist " + file.getAbsolutePath());
+            throw new IOException("directory already exist " + file.getFile().getAbsolutePath());
         } else {
-            File parent = file.getParentFile();
+            LocalFile parent = new LocalFile(file.getFile().getParentFile());
             return (parent == null || mkdirsInternal(parent))
-                    && (file.mkdir() || file.isDirectory());
+                    && (file.getFile().mkdir() || file.getFile().isDirectory());
         }
     }
 
     @Override
     public FileStatus[] list(String path) throws IOException {
-        File localf = new File(path);
+        LocalFile localf = new LocalFile(path);
         FileStatus[] results;
 
-        if (!localf.exists()) {
+        if (!localf.getFile().exists()) {
             return null;
         }
-        if (localf.isFile()) {
-            return new FileStatus[]{new LocalFileStatus(localf, this)};
+        if (localf.getFile().isFile()) {
+            return new FileStatus[]{new LocalFileStatus(localf.getFile(), this)};
         }
 
-        final String[] names = localf.list();
+        final String[] names = localf.getFile().list();
         if (names == null) {
             return null;
         }
         results = new FileStatus[names.length];
         for (int i = 0; i < names.length; i++) {
-            results[i] = getFileStatus((new File(path, names[i])).getPath());
+            results[i] = getFileStatus((new java.io.File(path, names[i])).getPath());
         }
 
         return results;
     }
 
     public FileStatus getFileStatus(String path) throws IOException {
-        File file = new File(path);
-        if (file.exists()) {
-            return new LocalFileStatus(file, this);
+        LocalFile file = new LocalFile(path);
+        if (file.getFile().exists()) {
+            return new LocalFileStatus(file.getFile(), this);
         } else {
             throw new IOException("File " + path + " does not exist");
         }
@@ -178,17 +176,17 @@ public class LocalFileSystem implements FileSystem{
 
     @Override
     public byte[] read(String path) throws IOException {
-        File file = new File(path);
-        FileInputStream fis = new FileInputStream(file);
-        byte[] b = new byte[(int) file.length()];
+        LocalFile file = new LocalFile(path);
+        FileInputStream fis = new FileInputStream(file.getFile());
+        byte[] b = new byte[(int) file.getFile().length()];
         fis.read(b);
         return b;
     }
 
     @Override
     public boolean exist(String path) {
-        File file = new File(path);
-        return file.exists();
+        LocalFile file = new LocalFile(path);
+        return file.getFile().exists();
     }
 
     @Override

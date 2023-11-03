@@ -23,7 +23,14 @@ public interface FileStatus {
      *
      * @return the corresponding Path to the FileStatus
      */
-    Path getPath();
+    String getPath();
+
+    /**
+     * Returns the last element of path.
+     *
+     * @return the last element of path.
+     */
+    String getName();
 
 //    /**
 //     * Get the block size of the file.

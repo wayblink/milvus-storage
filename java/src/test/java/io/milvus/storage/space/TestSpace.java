@@ -9,17 +9,26 @@ import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.FixedSizeBinaryVector;
-import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
+import org.junit.After;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestSpace {
+
+    private String tempPath = "space";
+
+    @After
+    public void after() {
+        File f = new File(tempPath);
+        f.delete();
+    }
 
     @Test
     public void testSpace() throws Exception {
@@ -40,7 +49,7 @@ public class TestSpace {
                 .build();
         Schema schema = new Schema(arrowSchema, schemaOptions);
         SpaceOptions spaceOptions = new SpaceOptions.Builder().setVersion(0L).setSchema(schema).build();
-        Space space = Space.Open("space", spaceOptions);
+        Space space = Space.Open(tempPath, spaceOptions);
 
         BufferAllocator allocator = new RootAllocator();
         VectorSchemaRoot root = VectorSchemaRoot.create(arrowSchema, allocator);

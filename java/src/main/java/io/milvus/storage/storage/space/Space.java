@@ -3,21 +3,20 @@ package io.milvus.storage.storage.space;
 import io.milvus.storage.common.exception.FieldNotFoundException;
 import io.milvus.storage.common.exception.SchemaNotMatchException;
 import io.milvus.storage.file.fragment.DeleteFragmentVector;
+import io.milvus.storage.fs.FileSystem;
+import io.milvus.storage.fs.FsFactory;
 import io.milvus.storage.storage.manifest.Manifest;
 import io.milvus.storage.storage.manifest.ManifestReaderWriter;
 import io.milvus.storage.storage.options.WriteOptions;
 import io.milvus.storage.storage.transaction.WriteOperation;
 import lombok.Getter;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 
 @Getter
 public class Space {
-    //        fs              fs.Fs
+    private FileSystem fs;
     private String path;
     private DeleteFragmentVector deleteFragments;
     private Manifest manifest;
@@ -27,11 +26,12 @@ public class Space {
     public Space() {
     }
 
-    public Space(String path, Manifest manifest) {
-        this(path, new DeleteFragmentVector(), manifest);
+    public Space(FileSystem fs, String path, Manifest manifest) {
+        this(fs, path, new DeleteFragmentVector(), manifest);
     }
 
-    public Space(String path, DeleteFragmentVector deleteFragments, Manifest manifest) {
+    public Space(FileSystem fs, String path, DeleteFragmentVector deleteFragments, Manifest manifest) {
+        this.fs = fs;
         this.path = path;
         this.deleteFragments = deleteFragments;
         this.manifest = manifest;
@@ -54,11 +54,8 @@ public class Space {
     // If space exists and version is specified, it will restore to the state at this version,
     // or it will choose the latest version.
     public static Space Open(String uri, SpaceOptions options) throws Exception {
+        FileSystem fs = FsFactory.Create(uri);
 
-        // todo fileSystem
-        FileSystem fs = FileSystem.newInstance(new Configuration());
-
-        Path path = new Path(uri);
         // create if not exist
         // 1, manifest
         // 2, scalar data
@@ -77,7 +74,7 @@ public class Space {
         if (options.getSchema() == null) {
             throw new Exception("schema is nil");
         }
-        return new Space(uri, m);
+        return new Space(fs, uri, m);
     }
 
     //todo other methods

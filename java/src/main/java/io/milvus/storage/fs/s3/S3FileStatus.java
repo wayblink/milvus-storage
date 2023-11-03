@@ -29,8 +29,12 @@ public class S3FileStatus implements FileStatus {
     }
 
     @Override
-    public Path getPath() {
-        return null;
-//        return fileStatus.getPath();
+    public String getPath() {
+        return fileStatus.getPath().toString();
+    }
+
+    @Override
+    public String getName() {
+        return fileStatus.getPath().getName();
     }
 }

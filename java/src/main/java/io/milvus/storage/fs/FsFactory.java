@@ -7,9 +7,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
+import static io.milvus.storage.fs.FsType.LocalFS;
+
 public class FsFactory {
 
-    public static FileSystem Create(FsType fsType, URI uri) throws IOException {
+    public static FileSystem Create(String uri) throws IOException {
+        FsType fsType = parseType(uri);
         switch (fsType) {
             case InMemory:
                 throw new Error("memory fs not supported yet");
@@ -20,5 +23,8 @@ public class FsFactory {
             default:
                 throw new Error("unknown fs type");
         }
+    }
+    public static FsType parseType(String uri) throws IOException {
+        return LocalFS;
     }
 }

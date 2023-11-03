@@ -12,6 +12,7 @@ import lombok.Setter;
 import manifest_proto.ManifestOuterClass;
 import org.apache.arrow.vector.types.pojo.Field;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,12 +20,12 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class Manifest {
+    private Long version;
     private Schema schema;
     private volatile FragmentVector scalarFragments;
     private volatile FragmentVector vectorFragments;
     private volatile FragmentVector deleteFragments;
     private volatile List<Blob> blobs;
-    private Long version;
 
     public Manifest(Schema schema) {
         this.schema = schema;
@@ -39,6 +40,10 @@ public class Manifest {
         org.apache.arrow.vector.types.pojo.Schema arrowSchema =
                 new org.apache.arrow.vector.types.pojo.Schema(new ArrayList<Field>()/*, schemaOptions*/);
         this.schema = new Schema(arrowSchema, schemaOptions);
+        this.scalarFragments = new FragmentVector();
+        this.vectorFragments = new FragmentVector();
+        this.deleteFragments = new FragmentVector();
+        this.blobs = new ArrayList<>();
     }
 
     public void AddScalarFragment(Fragment fragment) {
@@ -98,37 +103,13 @@ public class Manifest {
 
     public static Manifest FromProtobuf(ManifestOuterClass.Manifest manifest) throws Exception {
         return new Manifest(
+                manifest.getVersion(),
                 Schema.FromProtobuf(manifest.getSchema()),
                 FragmentVector.FromProtoBuf(manifest.getScalarFragmentsList()),
                 FragmentVector.FromProtoBuf(manifest.getVectorFragmentsList()),
                 FragmentVector.FromProtoBuf(manifest.getDeleteFragmentsList()),
-                Blob.FromProtobuf(manifest.getBlobsList()),
-                manifest.getVersion());
+                Blob.FromProtobuf(manifest.getBlobsList()));
     }
-
-    // todo
-    // func WriteManifestFile(manifest *Manifest, output file.File) error {
-    //	protoManifest, err := manifest.ToProtobuf()
-    //	if err != nil {
-    //		return err
-    //	}
-    //
-    //	bytes, err := proto.Marshal(protoManifest)
-    //	if err != nil {
-    //		return fmt.Errorf("write manifest file: %w", err)
-    //	}
-    //	write, err := output.Write(bytes)
-    //	if err != nil {
-    //		return fmt.Errorf("write manifest file: %w", err)
-    //	}
-    //	if write != len(bytes) {
-    //		return fmt.Errorf("failed to write whole file, expect: %v, actual: %v", len(bytes), write)
-    //	}
-    //	if err = output.Close(); err != nil {
-    //		return err
-    //	}
-    //	return nil
-    //}
 
     // func ParseFromFile(f fs.Fs, path string) (*Manifest, error) {
     //	manifest := Init()

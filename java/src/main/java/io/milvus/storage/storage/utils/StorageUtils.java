@@ -1,6 +1,8 @@
 package io.milvus.storage.storage.utils;
 
 import io.milvus.storage.common.constant.Constant;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.parquet.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,15 +14,23 @@ public class StorageUtils {
     private final static Logger log = LoggerFactory.getLogger(StorageUtils.class);
 
     public static String GetManifestFilePath(String path, Long version) {
-        return path + Constant.ManifestDir + version.toString() + Constant.ManifestFileSuffix;
+        return StringUtils.join(new String[]{
+                path,
+                Constant.ManifestDir,
+                version.toString() + Constant.ManifestFileSuffix}, File.separator);
     }
 
     public static String GetManifestTmpFilePath(String path, Long version) {
-        return path + Constant.ManifestDir + version.toString() + Constant.ManifestTempFileSuffix;
+        return StringUtils.join(new String[]{
+                path,
+                Constant.ManifestDir,
+                version.toString() + Constant.ManifestTempFileSuffix}, File.separator);
     }
 
     public static String GetManifestDir(String path) {
-        return path + Constant.ManifestDir;
+        return StringUtils.join(new String[]{
+                path,
+                Constant.ManifestDir}, File.separator);
     }
 
     public static Long ParseManifestVersionFromFileName(String path) {
@@ -41,7 +51,7 @@ public class StorageUtils {
 
     public static String GetNewParquetFilePath(String path) {
         UUID scalarFileId = UUID.randomUUID();
-        return new File(path, scalarFileId + Constant.ParquetDataFileSuffix).getPath();
+        return StringUtils.join(new String[]{path, scalarFileId + Constant.ParquetDataFileSuffix}, File.separator);
     }
 
     public static String GetScalarDataDir(String path) {

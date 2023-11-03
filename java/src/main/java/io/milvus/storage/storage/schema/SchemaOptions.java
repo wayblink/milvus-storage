@@ -68,7 +68,7 @@ public class SchemaOptions {
 
     public void Validate(org.apache.arrow.vector.types.pojo.Schema schema) throws SchemaException {
         if (this.primaryColumn != "") {
-            org.apache.arrow.vector.types.pojo.Field primaryField = schema.findField(this.primaryColumn);
+            org.apache.arrow.vector.types.pojo.Field primaryField = schema.findField(this.getPrimaryColumn());
             if (primaryField == null) {
                 throw new SchemaException(ErrPrimaryColumnNotFound);
             } else if (primaryField.getType().getTypeID() != Utf8

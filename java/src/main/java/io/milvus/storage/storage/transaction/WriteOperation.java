@@ -6,15 +6,13 @@ import io.milvus.storage.common.exception.SchemaNotMatchException;
 import io.milvus.storage.file.fragment.Fragment;
 import io.milvus.storage.format.Writer;
 import io.milvus.storage.format.parquet.ParquetFileWriter;
+import io.milvus.storage.storage.manifest.ManifestReaderWriter;
 import io.milvus.storage.storage.options.WriteOptions;
 import io.milvus.storage.storage.space.Space;
 import io.milvus.storage.storage.utils.StorageUtils;
-import lombok.AllArgsConstructor;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.FieldVector;
-import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema;
 
 import java.io.IOException;
@@ -69,6 +67,10 @@ public class WriteOperation implements Operation{
         // commit change
         space.getManifest().AddScalarFragment(scalarFragment);
         space.getManifest().AddVectorFragment(vectorFragment);
+
+        ManifestReaderWriter rw = new ManifestReaderWriter(space.getFs(), space.getPath());
+        rw.Write(space.getManifest());
+
 
         return;
     }

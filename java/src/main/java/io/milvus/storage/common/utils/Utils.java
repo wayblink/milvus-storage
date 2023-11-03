@@ -304,7 +304,7 @@ public class Utils {
 
     public static Schema FromProtobufSchema(SchemaOuterClass.ArrowSchema schema) throws Exception {
         List<Field> fields = new ArrayList<>();
-        for (int i = 0; i < fields.size(); i++) {
+        for (int i = 0; i < schema.getFieldsList().size(); i++) {
             fields.add(FromProtobufField(schema.getFields(i)));
         }
         return new Schema(fields, FromProtobufMetadata(schema.getMetadata()));

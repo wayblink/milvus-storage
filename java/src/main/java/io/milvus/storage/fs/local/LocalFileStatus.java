@@ -34,7 +34,12 @@ public class LocalFileStatus implements FileStatus {
     }
 
     @Override
-    public Path getPath() {
-        return null;
+    public String getPath() {
+        return this.file.getPath();
+    }
+
+    @Override
+    public String getName() {
+        return this.file.getName();
     }
 }

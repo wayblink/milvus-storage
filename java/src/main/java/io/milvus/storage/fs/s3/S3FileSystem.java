@@ -1,11 +1,11 @@
 package io.milvus.storage.fs.s3;
 
+import io.milvus.storage.fs.File;
 import io.milvus.storage.fs.FileStatus;
 import io.milvus.storage.fs.FileSystem;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
@@ -59,7 +59,7 @@ public class S3FileSystem implements FileSystem {
 
     @Override
     public File open(String path) {
-        return null;
+        return new S3File(path);
     }
 
     @Override
@@ -85,6 +85,12 @@ public class S3FileSystem implements FileSystem {
             res[i] = new S3FileStatus(fileStatues[i], this);
         }
         return res;
+    }
+
+    @Override
+    public FileStatus getFileStatus(String path) throws IOException {
+        org.apache.hadoop.fs.FileStatus fileStatus = innerFs.getFileStatus(new Path(path));
+        return new S3FileStatus(fileStatus, this);
     }
 
     @Override
